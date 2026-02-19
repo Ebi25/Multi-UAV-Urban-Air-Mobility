@@ -1,4 +1,3 @@
-clc; clear; close all;
 
 %% Load map
 load data/UrbanScenario_3D.mat
@@ -100,7 +99,8 @@ for idx = 1:4
         zs = ppval(ppZ,sFine);
 
         pathSmooth = [xs' ys' zs'];
-        t = (0:N-1)' * Ts;
+        timeDelay = (idx-1) * 8;   % 5 seconds delay per priority level
+        t = (0:N-1)' * Ts + timeDelay;
 
         % Check against previously planned UAVs
         isCollision = false;
@@ -168,5 +168,5 @@ xlabel('X'); ylabel('Y'); zlabel('Z')
 view(45,30)
 
 %% Save
-save('C:\Users\Lenovo\MATLAB Drive\Multi-UAV-Urban-Air-Mobility\Multi-UAV-Urban-Air-Mobility\Multi-UAV-Urban-Air-Mobility\data\MultiUAV_References.mat','missions','Ts')
+save(fullfile("data","MultiUAV_References.mat"), "missions", "Ts");
 disp("Centralized multi-UAV missions saved successfully.")

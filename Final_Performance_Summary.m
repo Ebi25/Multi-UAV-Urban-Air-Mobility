@@ -1,5 +1,3 @@
-clc; close all;
-
 if ~exist('out','var')
     error('Run Simulink model first.');
 end
@@ -56,8 +54,13 @@ rmse = zeros(4,1);
 
 for i = 1:4
     xi = states{i};
-    ref = missions(i).refTS.Data(:,1:3);
-    err = vecnorm(xi(:,1:3) - ref,2,2);
+
+    refPos = missions(i).refTS.Data(:,1:3);
+    refTime = missions(i).refTS.Time;
+
+    refInterp = interp1(refTime, refPos, t, 'linear', 'extrap');
+
+    err = vecnorm(xi(:,1:3) - refInterp,2,2);
     rmse(i) = sqrt(mean(err.^2));
 end
 
