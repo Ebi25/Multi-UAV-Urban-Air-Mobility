@@ -1,422 +1,278 @@
-Multi-UAV Urban Air Mobility Simulation
+# Multi-UAV Urban Air Mobility Simulation
 
-Centralized 3D Path Planning, MPC Tracking \& Multi-Drone Coordination in Urban Environments
+Centralized 3D Path Planning, MPC Tracking, and Multi-Drone Coordination in Urban Environments
 
+---
+This repository contains a MATLAB-Simulink simulation framework for centralized multi-UAV path planning and trajectory tracking in urban air mobility environments.
+# Overview
 
+This project implements a complete simulation framework for multi-UAV path planning and coordinated flight in dense urban environments using MATLAB and Simulink.
 
-Overview:
+The system enables multiple UAVs to autonomously:
 
+- Plan collision-free paths in a 3D urban environment
+- Avoid static obstacles such as buildings
+- Coordinate with other UAVs using centralized planning
+- Track smooth trajectories using Model Predictive Control (MPC)
 
+The framework integrates global path planning, trajectory generation, and closed-loop control simulation within a unified MATLAB environment.
 
-This project presents a complete simulation framework for multi-UAV path planning and coordinated flight in urban environments using:
+Technologies used include:
 
-* MATLAB
+- 3D Urban Environment Modeling
+- Occupancy Map Generation
+- RRT* Global Path Planning
+- Spline Path Smoothing
+- Multi-UAV Prioritized Planning
+- Model Predictive Control (MPC)
+- Simulink-based UAV flight simulation
 
+---
 
+# Problem Statement
 
-* Simulink
+Urban Air Mobility (UAM) requires UAVs to operate safely in dense city environments.
 
+Key challenges include:
 
+- Safe navigation through complex 3D environments
+- Avoidance of buildings and obstacles
+- Collision avoidance between multiple UAVs
+- Generation of optimal and smooth trajectories
+- Coordinated multi-UAV mission execution
 
-* UAV Toolbox
+This project demonstrates a complete simulation pipeline addressing these challenges.
 
+---
 
+# System Architecture
 
-* Model Predictive Control (MPC)
+The overall pipeline of the system is shown below.
 
+3D Urban Scenario  
+↓  
+Occupancy Map Creation  
+↓  
+RRT* Global Path Planning  
+↓  
+Spline Path Smoothing  
+↓  
+Multi-UAV Prioritized Planning  
+↓  
+MPC-Based Trajectory Tracking  
+↓  
+Simulink Multi-Drone Flight Simulation  
 
+Each stage contributes to generating safe, smooth, and coordinated UAV trajectories.
 
-* 3D Occupancy Mapping
+---
 
+# Repository Structure
 
+data/ → Urban environment data and reference trajectories  
+Models/ → Simulink UAV tracking models  
+Results/ → Simulation outputs and figures  
+Src/ → Core planning algorithms  
 
-* RRT\* Path Planning with Spline Smoothing
+Key files:
 
+Cuboidscenario.mlx → Urban environment generation  
+CreateMultiUAV_Prioritized.m → Multi-UAV path planner  
+Final_Animated_Flight.m → UAV simulation and animation  
+Final_Performance_Summary.m → Performance evaluation  
+MP2.uavpathplanning.prj → MATLAB project file  
+run_MultiUAV_Project.m → Main project execution script  
 
+---
 
-The system enables multiple drones to:
+# Core Components
 
+## 1. 3D Urban Scenario
 
+The urban environment is generated using cuboid building representations.
 
-* Plan collision-free 3D paths
+Features include:
 
+- Static obstacle modeling
+- Urban building layout generation
+- Configurable environment size
 
+These structures define the environment through which UAVs navigate.
 
-* Track optimized trajectories using MPC
+---
 
+## 2. Occupancy Map Generation
 
+Building bounding boxes are converted into a 3D occupancy map.
 
-* Avoid static obstacles in urban scenarios
+This map enables:
 
+- Collision detection
+- Path validation
+- Obstacle avoidance during planning
 
+The occupancy grid provides efficient spatial queries for path planning.
 
-* Execute coordinated missions in simulation
+---
 
+## 3. Global Path Planning (RRT*)
 
+The project uses the Rapidly Exploring Random Tree Star (RRT*) algorithm to generate optimal collision-free paths.
 
-**Problem Statement:**
+Key features of RRT*:
 
+- Sampling-based motion planning
+- Asymptotically optimal solutions
+- Efficient exploration of large environments
 
+The planner finds feasible paths while avoiding obstacles defined in the occupancy map.
 
-* Urban Air Mobility (UAM) requires:
+---
 
+## 4. Path Smoothing
 
+The raw path produced by RRT* may contain sharp turns.
 
-* Safe navigation in dense 3D environments
+Spline interpolation is used to smooth the path.
 
+Benefits include:
 
+- Smooth trajectory generation
+- Reduced control effort
+- Improved tracking feasibility
 
-* Collision avoidance between UAVs
+The smoothed trajectory becomes the reference path for the UAV controller.
 
+---
 
+## 5. Multi-UAV Coordination
 
-* Optimal path generation
+A centralized prioritized planning strategy is used.
 
+Steps include:
 
+1. Missions are assigned priorities
+2. UAV paths are planned sequentially
+3. Each UAV considers previously planned UAV paths
+4. Safety constraints prevent collisions between UAVs
 
-* Smooth trajectory tracking
+This ensures safe coordinated operation.
 
+---
 
+## 6. MPC Trajectory Tracking
 
-* Centralized coordination
+Each UAV tracks its trajectory using Model Predictive Control (MPC) implemented in Simulink.
 
+MPC provides:
 
+- Optimal control input generation
+- Smooth trajectory tracking
+- Constraint handling
+- Robust flight behavior
 
+The controller minimizes trajectory tracking error while maintaining stable flight.
 
+---
 
+# Simulation Results
 
+The simulation generates:
 
-Project Architecture
+- Multi-UAV flight animation
+- RRT* path visualization
+- Spline trajectory comparison
+- 3D tracking error plots
+- UAV performance metrics
 
-3D Map / Urban Scenario
+Results are available in the Results/ folder.
 
-&nbsp;       ↓
+---
 
-Occupancy Map Generation
+# Performance Highlights
 
-&nbsp;       ↓
+The system demonstrates:
 
-RRT\* Path Planning
+- Collision-free multi-UAV path generation
+- Stable 3D trajectory tracking
+- Smooth velocity profiles
+- Coordinated multi-drone flight
+- Maintained safety separation distances
 
-&nbsp;       ↓
+Metrics include:
 
-Spline Path Smoothing
+- Tracking error
+- Completion time
+- Minimum UAV separation
+- Control effort
 
-&nbsp;       ↓
+---
 
-Multi-UAV Prioritization
+# Technologies and Toolboxes Used
 
-&nbsp;       ↓
+The project uses the following MATLAB technologies:
 
-MPC-Based Trajectory Tracking
+- MATLAB
+- Simulink
+- UAV Toolbox
+- Navigation Toolbox
+- Model Predictive Control Toolbox
+- Optimization Toolbox
 
-&nbsp;       ↓
+---
 
-Simulink Multi-Drone Simulation
+# How to Run the Project
 
+1. Clone the repository:
 
+git clone https://github.com/Ebi25/Multi-UAV-Urban-Air-Mobility.git
 
-Repository Structure
+2. Open MATLAB.
 
-data/       → Scenario files, reference trajectories, MPC models
+3. Open the MATLAB project file:
 
-Models/     → Simulink UAV tracking models
+MP2.uavpathplanning.prj
 
-Results/    → Figures, performance plots, simulation videos
+4. Run the following scripts:
 
-Src/        → Core planning and control algorithms
+CreateMultiUAV_Prioritized  
+Final_Animated_Flight  
+Final_Performance_Summary  
 
+These scripts will:
 
+- Generate collision-free UAV paths
+- Simulate UAV flight using MPC control
+- Display visualization and performance metrics
 
-Cuboidscenario.mlx              → Urban environment setup
+---
 
-Final\_Animated\_Flight.m         → Multi-UAV simulation execution
+# Simulation Video
 
-Final\_Performance\_Summary.m     → Performance evaluation
+Simulation output can be viewed in:
 
-MP2.uavpathplanning.prj         → MATLAB project file
+Results/MultiUAV_Flight.mp4
 
+---
 
+# Future Work
 
-**Core Components:**
+Possible extensions include:
 
+- Sensor fusion for UAV state estimation
+- Decentralized collision avoidance
+- Dynamic obstacle handling
+- Photorealistic urban simulation
+- Task allocation optimization
+- Real-time multi-drone coordination
+- OpenStreetMap-based urban environment generation
+- Mission planning graphical interface
 
+---
 
-1\.3D Urban Scenario
+# Author
 
-
-
-Cuboid obstacle representation
-
-
-
-Urban building layout
-
-
-
-Static obstacle modeling
-
-
-
-2\.Occupancy Map Generation
-
-
-
-Conversion of building bounding boxes into occupancy grid
-
-
-
-3D collision validation
-
-
-
-3\.Global Path Planning (RRT\*)
-
-
-
-Rapidly Exploring Random Tree Star algorithm
-
-
-
-Asymptotically optimal path search
-
-
-
-Obstacle-aware sampling
-
-
-
-4\.Spline Smoothing
-
-
-
-Trajectory refinement
-
-
-
-Removal of sharp turns
-
-
-
-Improved tracking feasibility
-
-
-
-5\.Multi-UAV Coordination
-
-
-
-Mission assignment
-
-
-
-Prioritized planning
-
-
-
-Centralized coordination
-
-
-
-6\.MPC Tracking Controller
-
-
-
-Discrete 3D state-space model
-
-
-
-Model Predictive Control
-
-
-
-Position tracking error minimization
-
-
-
-Smooth control input generation
-
-
-
-**Simulation Results:**
-
-
-
-The project includes:
-
-
-
-* Multi-UAV flight animation
-
-
-
-* RRT\* path visualization
-
-
-
-* Spline path comparison
-
-
-
-* 3D tracking error analysis
-
-
-
-* Performance metrics evaluation
-
-
-
-* See /Results folder for:
-
-
-
-* Flight video
-
-
-
-* Tracking plots
-
-
-
-**Performance Highlights:**
-
-
-
-* Collision-free path generation
-
-
-
-* Stable 3D trajectory tracking
-
-
-
-* Low tracking error
-
-
-
-* Smooth velocity profiles
-
-
-
-* Coordinated multi-drone operation
-
-
-
-**Tools \& Toolboxes Used:**
-
-
-
-* MATLAB
-
-
-
-* Simulink
-
-
-
-* UAV Toolbox
-
-
-
-* Optimization Toolbox
-
-
-
-* Model Predictive Control Toolbox
-
-**How to Run**
-
-
-
-Open MP2.uavpathplanning.prj
-
-
-
-
-
-
-
-Execute:
-
-
-
-1.CreateMultiUAV\_Prioritized
-
-2.Final\_Animated\_Flight
-
-
-
-Run:
-
-**CreateMultiUAV_Prioritized**
-
-**Final\_Performance\_Summary**
-
-
-
-**Advanced Extensions -Future Work:**
-
-
-
-* Sensor Fusion-based UAV state estimation
-
-
-
-* Decentralized obstacle avoidance
-
-
-
-* Task allocation optimization
-
-
-
-* Photorealistic urban simulation
-
-
-
-* Dynamic obstacle handling
-
-
-
-* Real-time multi-drone coordination
-
-
-
-* OSM map import \& automated occupancy generation
-
-
-
-* App-based user interface for mission planning
-
-
-
-**Outcome:**
-
-
-
-This project demonstrates a complete pipeline for:
-
-
-
-* Urban 3D path planning
-* Multi-UAV coordination
-* Optimal trajectory tracking
-* Performance validation
-
-
-## Simulation Video
-
-[Download Multi-UAV Flight Simulation](Results/MultiUAV_Flight.mp4)
-
-
-
-Author
-
-
-
-**Ebiron A**
-
-Aeronautical Engineering
+Ebiron A  
+Aeronautical Engineering  
 
 GitHub: https://github.com/Ebi25
-
