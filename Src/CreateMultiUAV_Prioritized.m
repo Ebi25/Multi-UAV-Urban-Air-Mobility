@@ -1,7 +1,26 @@
+%% Detect project root automatically (script is inside Src folder)
+projectRoot = fileparts(fileparts(mfilename('fullpath')));
 
-%% Load map
-load data/UrbanScenario_3D.mat
-load data/UrbanScenario.mat
+addpath(genpath(fullfile(projectRoot,'Src')))
+addpath(genpath(fullfile(projectRoot,'data')))
+addpath(genpath(fullfile(projectRoot,'Models')))
+addpath(genpath(fullfile(projectRoot,'Results')))
+
+disp("Initializing Multi-UAV Path Planning System...")
+
+%% Load urban scenario files
+disp("Loading urban scenario files...")
+
+scenario3D = load(fullfile(projectRoot,'data','UrbanScenario_3D.mat'));
+scenario2D = load(fullfile(projectRoot,'data','UrbanScenario.mat'));
+
+assert(isfield(scenario3D,'occMap3D'),"Occupancy map not found in UrbanScenario_3D.mat")
+assert(isfield(scenario2D,'bboxes'),"Bounding boxes not found in UrbanScenario.mat")
+
+OccMap3D = scenario3D.occMap3D;
+bboxes = scenario2D.bboxes;
+
+disp("Scenario successfully loaded.")
 
 %% Map bounds
 xmin = min(bboxes(:,1));
@@ -13,6 +32,7 @@ zmax = max(bboxes(:,6));
 zSafe = zmax + 5;
 
 %% Define 4 missions (crossing layout)
+
 missions(1).start = [-245  -53  zSafe];
 missions(1).goal  = [  20  146  zSafe];
 
@@ -26,6 +46,7 @@ missions(4).start = [xmin+40  ymax-20  zSafe];
 missions(4).goal  = [xmax-40  ymin+20  zSafe];
 
 %% Estimate straight-line distance (priority rule)
+
 for k = 1:4
     missions(k).approxDist = norm(missions(k).goal - missions(k).start);
 end
@@ -35,8 +56,10 @@ end
 fprintf("Planning priority order (longest first):\n");
 disp(priorityOrder)
 
-%% State space
+%% Define state space
+
 ss = stateSpaceSE3;
+
 ss.StateBounds = [xmin xmax;
                   ymin ymax;
                   0 zSafe+5;
@@ -46,7 +69,7 @@ ss.StateBounds = [xmin xmax;
                   -1 1];
 
 sv = validatorOccupancyMap3D(ss);
-sv.Map = occMap3D;
+sv.Map = OccMap3D;
 sv.ValidationDistance = 1.0;
 
 planner = plannerRRTStar(ss, sv);
@@ -60,6 +83,7 @@ safetyRadius = 15;
 plannedMissions = [];
 
 %% Centralized prioritized planning
+
 for idx = 1:4
 
     k = priorityOrder(idx);
@@ -85,7 +109,8 @@ for idx = 1:4
 
         pathXYZ = pathObj.States(:,1:3);
 
-        % Spline smoothing
+        %% Path smoothing
+
         d = sqrt(sum(diff(pathXYZ).^2,2));
         s = [0; cumsum(d)];
 
@@ -94,15 +119,18 @@ for idx = 1:4
         ppZ = spline(s, pathXYZ(:,3));
 
         sFine = linspace(0,s(end),N);
+
         xs = ppval(ppX,sFine);
         ys = ppval(ppY,sFine);
         zs = ppval(ppZ,sFine);
 
         pathSmooth = [xs' ys' zs'];
-        timeDelay = (idx-1) * 8;   % 5 seconds delay per priority level
+
+        timeDelay = (idx-1) * 8;
         t = (0:N-1)' * Ts + timeDelay;
 
-        % Check against previously planned UAVs
+        %% Check collisions with previously planned UAVs
+
         isCollision = false;
 
         for j = 1:length(plannedMissions)
@@ -111,27 +139,32 @@ for idx = 1:4
             prevPos = interp1(prev.t, prev.pathSmooth, t, 'linear','extrap');
 
             for n = 1:N
+
                 if norm(pathSmooth(n,:) - prevPos(n,:)) < safetyRadius
                     isCollision = true;
                     break;
                 end
+
             end
 
             if isCollision
                 break;
             end
+
         end
 
         if isCollision
             fprintf("Conflict detected. Replanning...\n");
         end
+
     end
 
     if isCollision
         error("Failed to find collision-free path for UAV %d",k);
     end
 
-    % Time parameterization
+    %% Time parameterization
+
     vx = gradient(pathSmooth(:,1),Ts);
     vy = gradient(pathSmooth(:,2),Ts);
     vz = gradient(pathSmooth(:,3),Ts);
@@ -141,7 +174,8 @@ for idx = 1:4
     refTS = timeseries(refTrajectory(:,2:7),t);
     refTS = setinterpmethod(refTS,'linear');
 
-    % Store results
+    %% Store mission results
+
     missions(k).pathXYZ_smooth = pathSmooth;
     missions(k).refTS = refTS;
     missions(k).Ts = Ts;
@@ -152,21 +186,36 @@ for idx = 1:4
 end
 
 %% Visualization
-figure('Color','k'); hold on; grid on; axis equal
-show(occMap3D)
+
+figure('Color','k')
+hold on
+grid on
+axis equal
+
+show(OccMap3D)
+
 colors = {'r','g','c','y'};
 
 for k = 1:4
+
     p = missions(k).pathXYZ_smooth;
+
     plot3(p(:,1),p(:,2),p(:,3), ...
           'Color',colors{k}, ...
           'LineWidth',2);
+
 end
 
 title('Centralized Prioritized Multi-UAV Planning','Color','w')
-xlabel('X'); ylabel('Y'); zlabel('Z')
+
+xlabel('X')
+ylabel('Y')
+zlabel('Z')
+
 view(45,30)
 
-%% Save
-save(fullfile("data","MultiUAV_References.mat"), "missions", "Ts");
+%% Save results
+
+save(fullfile(projectRoot,"data","MultiUAV_References.mat"), "missions", "Ts");
+
 disp("Centralized multi-UAV missions saved successfully.")
